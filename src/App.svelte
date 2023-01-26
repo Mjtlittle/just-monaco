@@ -26,15 +26,40 @@
         // if (label === "typescript" || label === "javascript") {
         //   return new tsWorker();
         // }
+
         return new editorWorker();
       },
     };
 
+    const ls_save_key = "monaco.save";
+
     editor = m_editor.create(editor_element, {
-      value: "",
+      value: localStorage.getItem(ls_save_key) ?? "",
       language: "plaintext",
       theme: "vs-dark",
       automaticLayout: true,
+      cursorSmoothCaretAnimation: true,
+      fontSize: 20,
+      padding: {
+        top: 30,
+      },
+    });
+
+    const m = editor.getModel();
+
+    const save = () => {
+      const text = m.getValue();
+      localStorage.setItem(ls_save_key, text);
+    };
+
+    // auto save
+    let save_timer = null;
+    editor.onDidChangeModelContent(() => {
+      if (save_timer) clearTimeout(save_timer);
+      save_timer = setTimeout(() => {
+        save();
+        save_timer = null;
+      }, 300);
     });
 
     return () => {
@@ -45,7 +70,7 @@
 
 <div class="container" bind:this={editor_element} />
 
-<style>
+<style lang="scss">
   :global(body) {
     margin: 0;
     overflow: none;
