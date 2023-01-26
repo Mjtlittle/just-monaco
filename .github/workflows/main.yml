@@ -14,8 +14,9 @@ jobs:
           yarn build
 
       - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@v4.3.3
+        uses: JamesIves/github-pages-deploy-action@v4
         if: github.ref == 'refs/heads/main'
         with:
           branch: gh-pages
           folder: dist
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
