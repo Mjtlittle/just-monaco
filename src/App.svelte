@@ -1,8 +1,13 @@
 <script lang="ts">
-  import { editor as m_editor } from "monaco-editor";
+  import {
+    KeyCode,
+    KeyMod,
+    languages,
+    editor as monacoEditor,
+  } from "monaco-editor";
   import { onMount } from "svelte";
 
-  let editor: m_editor.IStandaloneCodeEditor;
+  let editor: monacoEditor.IStandaloneCodeEditor;
   let editor_element: HTMLDivElement;
 
   import editorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
@@ -10,6 +15,13 @@
   // import cssWorker from "monaco-editor/esm/vs/language/css/css.worker?worker";
   // import htmlWorker from "monaco-editor/esm/vs/language/html/html.worker?worker";
   // import tsWorker from "monaco-editor/esm/vs/language/typescript/ts.worker?worker";
+
+  const default_text = [
+    "🦋 Just Monaco",
+    '"I pretty much just took https://microsoft.github.io/monaco-editor/ and stuck it on a static site"',
+  ].join("\n");
+
+  const ls_save_key = "monaco.save";
 
   onMount(() => {
     self.MonacoEnvironment = {
@@ -31,17 +43,31 @@
       },
     };
 
-    const ls_save_key = "monaco.save";
+    // languages.registerTokensProviderFactory("plaintext", {});
 
-    editor = m_editor.create(editor_element, {
-      value: localStorage.getItem(ls_save_key) ?? "",
+    editor = monacoEditor.create(editor_element, {
+      value: localStorage.getItem(ls_save_key) ?? default_text,
       language: "plaintext",
       theme: "vs-dark",
       automaticLayout: true,
-      cursorSmoothCaretAnimation: true,
+      cursorSmoothCaretAnimation: "on",
       fontSize: 20,
       padding: {
         top: 30,
+      },
+    });
+
+    editor.addCommand(KeyMod.Shift | KeyCode.Enter, () => {
+      editor.getAction("editor.action.quickCommand").run();
+    });
+
+    editor.addAction({
+      label: "Toggle Word Wrap",
+      id: "justmonaco.action.togglewordwrap",
+      run: function (editor: monacoEditor.ICodeEditor): void | Promise<void> {
+        editor.getOption(monacoEditor.EditorOption.wordWrap) === "off"
+          ? editor.updateOptions({ wordWrap: "on" })
+          : editor.updateOptions({ wordWrap: "off" });
       },
     });
 
